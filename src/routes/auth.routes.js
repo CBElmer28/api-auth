@@ -34,7 +34,7 @@ router.post("/login",
     body("password").notEmpty(),
     async (req, res) => {
         const errors = validationResult(req);
-        if (lerrors.isEmpty()) return res.status(400).json(errors.array());
+        if (!errors.isEmpty()) return res.status(400).json(errors.array());
 
         const { email, password} = req.body;
         const [rows] = await pool.query("SELECT * FROM usuarios WHERE email=?", [email]);
@@ -42,7 +42,7 @@ router.post("/login",
 
         const user = rows[0];
         const ok = await bcrypt.compare (password, user.password_hash);
-        if (lok) return res.status(401).json({ error: "Contraseña incorrecta" });
+        if (!ok) return res.status(401).json({ error: "Contraseña incorrecta" });
 
         const token = signAccessToken({ id: user.id, email, role: user.role });
         res.json({ token, role: user.role });
